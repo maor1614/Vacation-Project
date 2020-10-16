@@ -12,7 +12,7 @@ const styles = (theme) => ({
   },
   footer: {
     backgroundColor: "theme.palette.background.paper",
-    "margin-top": "calc(10% + 150px)",
+    
     bottom: 0,
   },
 });

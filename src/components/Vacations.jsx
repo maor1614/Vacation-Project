@@ -5,210 +5,283 @@ import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
 import SearchIcon from "@material-ui/icons/Search";
 import TextField from "@material-ui/core/TextField";
-import DeleteIcon from "@material-ui/icons/Delete";
 import Typography from "@material-ui/core/Typography";
-import FlightLandIcon from "@material-ui/icons/FlightLand";
-import AddIcon from "@material-ui/icons/Add";
+import ClearIcon from "@material-ui/icons/Clear";
+import { Grid, Link } from "@material-ui/core";
+import Input from "@material-ui/core/Input";
+import AppBar from "@material-ui/core/AppBar";
+import { Link as RouterLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   margin: {
     margin: theme.spacing(2),
   },
-  extendedIcon: {
-    marginRight: theme.spacing(1),
+  root: {
+    flexGrow: 1,
   },
-  container: {
-    display: "flex",
-    flexWrap: "wrap",
-  },
-  button: {
-    margin: "15px",
-  },
-  textField: {},
-  flight: {
-    marginRight: "auto",
-    float: "left",
-    margin: "5px",
-    width: "70px",
-    height: "70px",
-    color: "blue",
-  },
-  icon: {
-    margin: theme.spacing(3),
-  },
-  plus: {
-    float: "right",
-  },
-  secondry: {
-    margin: theme.spacing(1),
-  },
-  back: {
-    top: "50%",
-    height: 50,
-    float: "right",
-    position: "relative",
-    transform: "translateY(-70%)",
-  },
-
-  sign: {
-    top: "50%",
-    height: 50,
-    float: "right",
-    position: "relative",
-    transform: "translateY(-70%)",
+  menuButton: {
+    marginRight: theme.spacing(2),
   },
 }));
 
-export default function Vacations({ history }) {
+export default function Vacations({ history, match }) {
   const user = useSelector((state) => state.user);
 
   const [vacations, setVactions] = useState([]);
-
+  const [likedVacations, setLikedVacations] = useState([]);
+  const [unLikedVacations, setUnlikedVacations] = useState([]);
   const [dept, setDept] = useState("");
   const [ret, setRet] = useState("");
   const [descr, setDesc] = useState("");
-  const [search, setSearch] = useState('');
-  const [searchResults, setSearchResults] = useState([])
-  
-  
-
+  const [search, setSearch] = useState([]);
+  const [error, seterror] = useState("");
 
   const classes = useStyles();
 
   useEffect(() => {
-    (async () => {
-      let res = await fetch("http://localhost:3001/vacations");
-      let data = await res.json();
-      setVactions(data);
-      console.log(data);
-    })();
-  }, []);
+    if (user.login === false) {
+      history.push("/login");
+    } else {
+      (async () => {
+        console.log("vacation", user);
+        let res = await fetch("http://localhost:3001/vacations", {
+          headers: { Authorization: localStorage.token },
+        });
+        let data = await res.json();
+        setVactions(data);
+        if (user.role === "user") {
+          let res1 = await fetch(
+            `http://localhost:3001/follows/${user.userid}`,
+            {
+              headers: { Authorization: localStorage.token },
+            }
+          );
+          let data1 = await res1.json();
+          setLikedVacations(data1);
+
+          setUnlikedVacations(data.filter(compare(data1)));
+          console.log(data);
+        }
+      })();
+    }
+  }, [user, search]);
 
   const handleSearch = async () => {
-    try {
-      let res = await fetch("http://localhost:3001/vacations/search", {
-        method: "POST",
-        headers: {
-          "content-type": "application/json",
-          Authorization: localStorage.token,
-        },
-        body: JSON.stringify({
-          descr,
-          dept,
-          ret,
-        }),
-      });
-      let data = await res.json();
-      console.log(data);
-    } catch (err) {
-      console.log(err);
+    let res = await fetch("http://localhost:3001/vacations/search", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+      },
+      body: JSON.stringify({
+        descr,
+        dept,
+        ret,
+      }),
+    });
+    let data = await res.json();
+    console.log(data);
+    if (data.error) {
+      seterror(data.msg);
+    } else {
+      if (data.length === 0) {
+        alert("There are no matching vacations for the search you requested");
+      }
     }
+    setSearch(data);
   };
-   
- 
 
+  const handleClear = async () => {
+    setSearch([]);
+    setDesc("");
+    setDept("");
+    setRet("");
+  };
 
+  function compare(otherArray) {
+    console.log("called from compare");
+    return function (current) {
+      for (var i = 0; i < otherArray.length; i++) {
+        if (current.id == otherArray[i].id) {
+          return false;
+        }
+      }
+      return true;
+    };
+  }
+
+  function handleLogOut() {
+    user.login = false;
+    localStorage.removeItem("token");
+    localStorage.removeItem("time");
+    history.push("login");
+  }
 
   return (
-    <div className="vacation">
-      <Typography className={classes.icon} variant="h2" gutterBottom>
-        <FlightLandIcon className={classes.flight}></FlightLandIcon>
-        Vactionly Safe Travel!
-      </Typography>
-      
-      {user.login && user.role == "admin" && (
-        <>
+    <div id="vacations">
+      <AppBar>
+        <Grid container>
+          <Grid item xs={1}>
+            <Typography color="inherit" gutterBottom>
+              Welcome {user.fname}
+            </Typography>
+          </Grid>
+          <Grid item xs={10}></Grid>
+          <Grid item xs={1}>
+            <Button color="inherit" onClick={handleLogOut}>
+              Logout
+            </Button>
+          </Grid>
+        </Grid>
+      </AppBar>
+      <br></br>
+      <br></br>
+      <div className="search">
+        <TextField
+          className={classes.margin}
+          value={descr}
+          placeholder="Description"
+          color="primary"
+          onChange={(e) => setDesc(e.target.value)}
+          type="text"
+        />
+        <Input
+          className={classes.margin}
+          title="Departure"
+          value={dept}
+          placeholder="Departure"
+          color="primary"
+          onChange={(e) => setDept(e.target.value)}
+          type="date"
+        />
+        <Input
+          className={classes.margin}
+          title="Return"
+          value={ret}
+          placeholder="Return"
+          color="primary"
+          onChange={(e) => setRet(e.target.value)}
+          type="date"
+        />
+        <span>
+          <Button
+            ariant="outlined"
+            size="small"
+            color="primary"
+            className={classes.margin}
+            onClick={handleSearch}
+          >
+            <SearchIcon></SearchIcon>
+            Search
+          </Button>
           <Button
             variant="contained"
+            size="small"
             color="primary"
-            className={classes.plus}
-            onClick={() => history.push("/add")}
+            className={classes.margin}
+            onClick={handleClear}
           >
-            <AddIcon></AddIcon>
-            Add Vacation
+            <ClearIcon></ClearIcon>
+            Clear Search
           </Button>
-        </>
-      )}
+        </span>
+      </div>
+      {search.length === 0 ? (
+        user.role === "admin" ? (
+          <>
+            <br></br>
 
-      {user.login ? (
-        <Typography className={classes.secondry} variant="h4" gutterBottom>
-          Hello Welcome to the best Vacations Companian App! {user.fname}
-        </Typography>
+            <Button variant="contained" color="secondary">
+              <Link to="/add" component={RouterLink}>
+                Add Vacation
+              </Link>
+            </Button>
+
+            <h5>Vacations list</h5>
+            <Grid container>
+              <Grid item xs={2}></Grid>
+              <Grid item xs={8}>
+                <Grid container spacing={2}>
+                  {vacations.map((v) => (
+                    <Grid item xs={6}>
+                      <Vacation
+                        update={setVactions}
+                        key={v.id}
+                        vacation={v}
+                        vacations={vacations}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+              <Grid item xs={2}></Grid>
+            </Grid>
+          </>
+        ) : (
+          <>
+            <br></br>
+            <br></br>
+            <h5>The vacations followed by you</h5>
+            <Grid container>
+              <Grid item xs={2}></Grid>
+              <Grid item xs={8}>
+                <Grid container spacing={2}>
+                  {likedVacations.map((f) => (
+                    <Grid item xs={6}>
+                      <Vacation
+                        updateLikes={setLikedVacations}
+                        updateUnLikes={setUnlikedVacations}
+                        key={f.id}
+                        vacation={f}
+                        like={true}
+                        likedVacations={likedVacations}
+                        unLikedVacations={unLikedVacations}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+              <Grid item xs={2}></Grid>
+            </Grid>
+
+            <h5> The vacations that have not yet been followed by you</h5>
+            <Grid container>
+              <Grid item xs={2}></Grid>
+              <Grid item xs={8}>
+                <Grid container spacing={2}>
+                  {unLikedVacations.map((v) => (
+                    <Grid item xs={6}>
+                      <Vacation
+                        updateLikes={setLikedVacations}
+                        updateUnLikes={setUnlikedVacations}
+                        key={v.id}
+                        vacation={v}
+                        like={false}
+                        likedVacations={likedVacations}
+                        unlikedVacations={unLikedVacations}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              </Grid>
+              <Grid item xs={2}></Grid>
+            </Grid>
+          </>
+        )
       ) : (
-        <>
-          <Button
-            variant="contained"
-            color="primary"
-            href={"/login"}
-            className={classes.sign}
-          >
-            Login
-          </Button>
-
-          <Button
-            variant="contained"
-            color="primary"
-            href={"/signup"}
-            className={classes.back}
-          >
-            SignUp
-          </Button>
-        </>
+        <Grid container>
+          <Grid item xs={2}></Grid>
+          <Grid item xs={8}>
+            <Grid container spacing={2}>
+              {search.map((f) => (
+                <Grid item xs={6}>
+                  <Vacation key={f.id} vacation={f} />
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+          <Grid item xs={2}></Grid>
+        </Grid>
       )}
-
-      <TextField
-        onChange={(e) => setDept(e.target.value)}
-        id="date"
-        label="Departure"
-        type="date"
-        className={classes.textField}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-      <TextField
-        onChange={(e) => setRet(e.target.value)}
-        id="date"
-        label="Return"
-        type="date"
-        className={classes.textField}
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-      
-      
-      <TextField
-        
-        onChange={(e) => setSearch(e.target.value)}
-        id="standard-basic"
-        label="Description"
-        value={search}
-      />
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={handleSearch}
-        className={classes.textField}
-      >
-        <SearchIcon></SearchIcon>
-        Search
-      </Button>
-
-      <Button type="reset" variant="contained" color="primary" className={classes.textField}>
-        <DeleteIcon></DeleteIcon>
-        Clear
-      </Button>
-      {/* {/* {user.login && user.role == "user" && (
-        <>
-          <h1>Vacations that i follow </h1>
-          <h1>Vacations that i don't follow</h1>
-        </>
-      )} */}
-
-      {vacations.map((f) => (
-        <Vacation update={setVactions} key={f.id} vacation={f} />
-      ))}
     </div>
   );
 }

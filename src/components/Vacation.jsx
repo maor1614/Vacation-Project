@@ -1,23 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import Card from "@material-ui/core/Card";
 import { makeStyles } from "@material-ui/core/styles";
 import { red } from "@material-ui/core/colors";
-import CardHeader from "@material-ui/core/CardHeader";
-import IconButton from "@material-ui/core/IconButton";
-import CardMedia from "@material-ui/core/CardMedia";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
-import FavoriteIcon from "@material-ui/icons/Favorite";
 import CloseIcon from "@material-ui/icons/Close";
 import CreateIcon from "@material-ui/icons/Create";
 import Button from "@material-ui/core/Button";
 import "moment-timezone";
 import Moment from "react-moment";
+import { CardActions, Grid } from "@material-ui/core";
 
 const useStyles = makeStyles((theme) => ({
   root: {
-    maxWidth: 360,
+    maxWidth: 275,
   },
   media: {
     height: 0,
@@ -36,26 +33,29 @@ const useStyles = makeStyles((theme) => ({
   avatar: {
     backgroundColor: red[500],
   },
-  button: {},
+  title: {
+    fontSize: 14,
+  },
 }));
 
-export default function Vacation({ vacation, update }) {
-  const user = useSelector((state) => state.user);
+export default function Vacation({
+  update,
+  vacation,
+  updateLikes,
+  like,
+  vacations,
+  likedVacations,
+  unLikedVacations,
+  updateUnLikes,
   
+}) {
+  const user = useSelector((state) => state.user);
+  const [error, setError] = useState("");
 
-  // put=> vacation id
-  // follows - > insert useid vacation id,
-  // update vacation => follow +1
-  // trigger + set trigger
-  // settigger(!trigger)// (tigger +1)
-  // }
   const classes = useStyles();
 
-
-
-  const handleFollowing = async () => {
-    
-
+  const handleFollowing = async (e) => {
+    console.log(vacation);
     try {
       let res = await fetch("http://localhost:3001/follows/", {
         method: "POST",
@@ -70,89 +70,123 @@ export default function Vacation({ vacation, update }) {
       });
       let data = await res.json();
       console.log(data);
-    } catch (err) {
-      console.log(err);
-    }
+      if (data.error) {
+        setError(data.msg);
+      } else {
+        let newUnlikes = [...unLikedVacations];
+        newUnlikes = newUnlikes.filter((item) => item.id !== vacation.id);
+        vacation.followers = vacation.followers + 1;
+        let newLikes = [...likedVacations, vacation];
+        updateUnLikes(newUnlikes);
+        updateLikes(newLikes);
+      }
+    } catch (err) {}
   };
 
-  const handleDelete = async () => {
-    let res = await fetch("http://localhost:3001/vacations/" + vacation.id, {
-      method: "DELETE",
-      headers: { Authorization: localStorage.token },
+  const handleUnLike = async () => {
+    console.log(vacation);
+
+    let res = await fetch('http://localhost:3001/follows/ ' + user.userid, {
+      method: "PUT",
+      headers: {
+        "content-type": "application/json",
+        Authorization: localStorage.token,
+      },
+      body: JSON.stringify({ vacation_id: vacation.id }),
     });
     let data = await res.json();
     console.log(data);
-    update(data);
+    updateLikes(data);
+    vacation.follow = vacation.follow - 1;
+    let newVacations = newVacations.filter((v) => v.id !== vacation.id);
+    update([...newVacations, likedVacations.find((v) => v.id == vacation.id)]);
+  };
+
+  const handleDelete = async (e) => {
+    console.log(vacation);
+    try {
+      let res = await fetch("http://localhost:3001/vacations/" + vacation.id, {
+        method: "DELETE",
+        headers: { Authorization: localStorage.token },
+      });
+      let data = await res.json();
+      console.log(data);
+      if (data.error) {
+        setError(data.msg);
+      } else {
+        let newVacations = [...vacations];
+        newVacations = newVacations.filter((item) => item.id !== vacation.id);
+        update(newVacations);
+      }
+    } catch (err) {}
   };
 
   return (
-    <div className="vacation">
-        {/* {user.login && user.role == "user" && (
-        <>
-          <h1>Vacations that i follow</h1>
-
-          <h1>Vacations that i don't follow</h1>
-        </>
-      )} */}
-     
-
+    <div>
       <Card className={classes.root}>
-      
-      {user.login && user.role == "admin" && (
-          <span>
-            <Button
-              onClick={handleDelete}
-              color="default"
-              startIcon={<CloseIcon />}
-              variant="text"
-              className={classes.button}
-            />
+        <Grid container>
+          <Grid item>
+            <img
+              className="ImgVaction"
+              alt="vacationpic"
+              src={vacation.img_src}
+            ></img>
+          </Grid>
+          <Grid item>
+            <CardContent>
+              <Typography variant="h4" component="h2">
+                {vacation.country_name}
+              </Typography>
+              
+              <Typography variant="body2" component="p">
+                Departure: <Moment format="DD/MM/YYYY">{vacation.dept}</Moment>
+                <br />
+                Return: <Moment format="DD/MM/YYYY">{vacation.ret}</Moment>
+              </Typography>
 
-            <Button
-              variant="text"
-              color="default"
-              startIcon={<CreateIcon />}
-              href={"/edit/" + vacation.id}
-              className={classes.button}
-            />
-          </span>
-        )}
-        <CardHeader title={vacation.country_name} />
+              <Typography variant="h5" component="h2">
+                Price: {vacation.price}
+              </Typography>
 
+              <Typography variant="body2" color="textSecondary" component="p">
+                Description: {vacation.descr}
+              </Typography>
+            </CardContent>
 
-      
+            {user.login && user.role == "admin" && (
+              <CardActions>
+                <Button
+                  size="small"
+                  onClick={handleDelete}
+                  color="default"
+                  startIcon={<CloseIcon />}
+                  variant="text"
+                  className={classes.button}
+                />
 
-        {/* <h1>Ret: {vacation.ret} </h1> */}
-        <CardMedia
-          className={classes.media}
-          image={vacation.img_src}
-          alt="vacationImg"
-        />
-          <h3>
-          Departure:
-          <Moment format= "DD/MM/YYYY">{vacation.dept}</Moment>
-        </h3>
-
-        <h3>
-          Return:
-          <Moment format= "DD/MM/YYYY">{vacation.ret}</Moment>
-        </h3>
-
-        <h3>Price: {vacation.price} </h3>
-        <CardContent>
-          <Typography variant="body2" color="textSecondary" component="p">
-            Description: {vacation.descr}
-          </Typography>
-        </CardContent>
-
-        {user.login && user.role == "user" && (
-          <IconButton  onClick={handleFollowing}>
-            <FavoriteIcon />
-          </IconButton>
-        )}
-
-
-
+                <Button
+                  size="small"
+                  variant="text"
+                  color="default"
+                  startIcon={<CreateIcon />}
+                  href={"/edit/" + vacation.id}
+                  className={classes.button}
+                />
+              </CardActions>
+            )}
+            <CardActions>
+              {like === true ? (
+                <Button size="small" onClick={handleUnLike}>
+                  UnLike
+                </Button>
+              ) : (
+                <Button size="small" onClick={handleFollowing}>
+                  Like
+                </Button>
+              )}
+            </CardActions>
+          </Grid>
+        </Grid>
       </Card>
     </div>
   );

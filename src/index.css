@@ -10,9 +10,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  height: 100vh;
-  margin: 5;
-  padding: 0;
+  
+  
 }
 
 code {
@@ -36,8 +35,16 @@ code {
   margin: 15px;
 }
 
-.vacation {
+
+.vacations-card {
   margin: 15px;
+  display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: flex-start;
+	align-items: baseline;
+  align-content: stretch;
+  display: inline-block;
 }
 
 .editpage {
@@ -57,4 +64,17 @@ code {
   justify-content: flex-start;
   align-items: center;
   align-content: center;
+}
+
+
+.search{
+  margin: 15px;
+  padding: 5px;
+}
+
+
+
+.ImgVaction{
+  height: 300px;
+  width: 600px;
 }

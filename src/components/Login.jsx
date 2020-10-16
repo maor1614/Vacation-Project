@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import decode from "jwt-decode";
-import { Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 import TextField from "@material-ui/core/TextField";
 import Button from "@material-ui/core/Button";
 import { makeStyles } from "@material-ui/core/styles";
@@ -22,16 +22,32 @@ export default function Login({ history }) {
   const [username, setusername] = useState("");
   const [password, setpassword] = useState("");
   const [error, seterror] = useState("");
-  
-  
+  const user = useSelector((state) => state.user);
+
   const dispatch = useDispatch();
 
   const classes = useStyles();
 
+
+  useEffect(() => {
+   (async () => {
+     console.log(user)
+     if (user.login === true) {
+       history.push("/")
+     }
+   })()
+  }, [user])
+
+
+  function exit() {
+    dispatch({type: "LOGOUT"})
+    history.push("/login")
+  }
+
+
   const handleSumbit = async (e) => {
     e.preventDefault();
     try {
-      
       let res = await fetch("http://localhost:3001/users/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
@@ -50,9 +66,7 @@ export default function Login({ history }) {
         });
         history.push("/");
       }
-    } catch (err) {
-      
-    }
+    } catch (err) {}
   };
 
   return (
@@ -98,10 +112,6 @@ export default function Login({ history }) {
       <p>
         <Link to="/signup">Don't have an account? Sign up here </Link>
       </p>
-      {/* <img
-        src="https://media.tdc.travel/tdc_media/tmp/new/1475865594.500.package02.jpg"
-        alt="Logo"
-      /> */}
     </div>
   );
 }

@@ -3,6 +3,7 @@ let intialUser = {
 };
 
 export const user = (state = intialUser, action) => {
+  
   switch (action.type) {
     case "LOGIN":
       let newState = {
