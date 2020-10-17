@@ -8,7 +8,7 @@ import { makeStyles } from "@material-ui/core/styles";
 import Typography from "@material-ui/core/Typography";
 import { red } from "@material-ui/core/colors";
 import LockIcon from "@material-ui/icons/Lock";
-
+import Footer from './Footer';
 const useStyles = makeStyles((theme) => ({
   button: {
     margin: theme.spacing(0),
@@ -112,6 +112,7 @@ export default function Login({ history }) {
       <p>
         <Link to="/signup">Don't have an account? Sign up here </Link>
       </p>
+      <Footer />
     </div>
   );
 }

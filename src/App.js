@@ -7,7 +7,7 @@ import Vacations from "./components/Vacations";
 import AddVacation from "./components/AddVacation";
 import EditVactaion from "./components/EditVactaion";
 import jwt_decode from "jwt-decode";
-import Footer from "./components/Footer";
+
 import Chart from "./components/Chart";
 import { useDispatch } from "react-redux";
 

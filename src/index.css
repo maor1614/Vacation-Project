@@ -4,14 +4,8 @@
 
 html,
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
-    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
-    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  
-  
 }
 
 code {
@@ -35,17 +29,16 @@ code {
   margin: 15px;
 }
 
-
-.vacations-card {
-  margin: 15px;
+/* .vacations-card {
+  margin: 5px;
   display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	justify-content: flex-start;
-	align-items: baseline;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: baseline;
   align-content: stretch;
   display: inline-block;
-}
+} */
 
 .editpage {
   display: flex;
@@ -66,15 +59,44 @@ code {
   align-content: center;
 }
 
-
-.search{
-  margin: 15px;
+.search {
+  margin-right: 250px;
   padding: 5px;
+  display: flex;
+  justify-content: center;
 }
 
 
+ .btn {
+  
+ justify-content: center;
+  margin-right: 50px;
+  align-items: center;
+  padding-right: 50px;
+  display: flex;
+ }
 
-.ImgVaction{
+.chart {
+  width: 700px;
+}
+
+.vacations {
+  margin: 15px;
+  text-align: center;
+}
+
+
+.ImgVaction {
   height: 300px;
   width: 600px;
+}
+
+.footer {
+  margin-top: 0rem;
+  padding: 0rem;
+  background-color: rgb(49, 22, 157);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
 }

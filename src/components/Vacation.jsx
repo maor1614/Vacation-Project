@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import Card from "@material-ui/core/Card";
 import { makeStyles } from "@material-ui/core/styles";
-import { red } from "@material-ui/core/colors";
 import CardContent from "@material-ui/core/CardContent";
 import Typography from "@material-ui/core/Typography";
 import CloseIcon from "@material-ui/icons/Close";
@@ -15,10 +14,11 @@ import { CardActions, Grid } from "@material-ui/core";
 const useStyles = makeStyles((theme) => ({
   root: {
     maxWidth: 275,
+    opacity: 0.9,
   },
   media: {
     height: 0,
-    paddingTop: "56.25%", // 16:9
+    paddingTop: "56.25%",
   },
   expand: {
     transform: "rotate(0deg)",
@@ -30,9 +30,7 @@ const useStyles = makeStyles((theme) => ({
   expandOpen: {
     transform: "rotate(180deg)",
   },
-  avatar: {
-    backgroundColor: red[500],
-  },
+
   title: {
     fontSize: 14,
   },
@@ -47,7 +45,6 @@ export default function Vacation({
   likedVacations,
   unLikedVacations,
   updateUnLikes,
-  
 }) {
   const user = useSelector((state) => state.user);
   const [error, setError] = useState("");
@@ -74,8 +71,9 @@ export default function Vacation({
         setError(data.msg);
       } else {
         let newUnlikes = [...unLikedVacations];
+
         newUnlikes = newUnlikes.filter((item) => item.id !== vacation.id);
-        vacation.followers = vacation.followers + 1;
+        vacation.follow = vacation.follow + 1;
         let newLikes = [...likedVacations, vacation];
         updateUnLikes(newUnlikes);
         updateLikes(newLikes);
@@ -84,9 +82,10 @@ export default function Vacation({
   };
 
   const handleUnLike = async () => {
-    console.log(vacation);
+   
+   
 
-    let res = await fetch('http://localhost:3001/follows/ ' + user.userid, {
+    let res = await fetch("http://localhost:3001/follows/ " + user.userid, {
       method: "PUT",
       headers: {
         "content-type": "application/json",
@@ -94,12 +93,18 @@ export default function Vacation({
       },
       body: JSON.stringify({ vacation_id: vacation.id }),
     });
-    let data = await res.json();
-    console.log(data);
-    updateLikes(data);
+    // let data = await res.json();
+
+    // vacation.follow = vacation.follow - 1;
+    // let newVacations = unLikedVacations.filter((v) => v.id !== vacation.id);
+    // updateLikes([...newVacations, likedVacations.find((v) => v.id == vacation.id)]);
+    
+    let newLikes = [...likedVacations];
+    newLikes = newLikes.filter((item) => item.id !== vacation.id);
+    updateLikes(newLikes);
     vacation.follow = vacation.follow - 1;
-    let newVacations = newVacations.filter((v) => v.id !== vacation.id);
-    update([...newVacations, likedVacations.find((v) => v.id == vacation.id)]);
+    let newUnLikesVacations = [...unLikedVacations, vacation];
+    updateUnLikes(newUnLikesVacations);
   };
 
   const handleDelete = async (e) => {
@@ -125,6 +130,27 @@ export default function Vacation({
     <div>
       <Card className={classes.root}>
         <Grid container>
+          {user.login && user.role == "admin" && (
+            <CardActions>
+              <Button
+                size="small"
+                onClick={handleDelete}
+                color="default"
+                startIcon={<CloseIcon />}
+                variant="text"
+                className={classes.button}
+              />
+
+              <Button
+                size="small"
+                variant="text"
+                color="default"
+                startIcon={<CreateIcon />}
+                href={"/edit/" + vacation.id}
+                className={classes.button}
+              />
+            </CardActions>
+          )}
           <Grid item>
             <img
               className="ImgVaction"
@@ -137,15 +163,15 @@ export default function Vacation({
               <Typography variant="h4" component="h2">
                 {vacation.country_name}
               </Typography>
-              
+
               <Typography variant="body2" component="p">
                 Departure: <Moment format="DD/MM/YYYY">{vacation.dept}</Moment>
                 <br />
                 Return: <Moment format="DD/MM/YYYY">{vacation.ret}</Moment>
               </Typography>
 
-              <Typography variant="h5" component="h2">
-                Price: {vacation.price}
+              <Typography color="textSecondary" variant="h5" component="h2">
+                Price: {vacation.price}$
               </Typography>
 
               <Typography variant="body2" color="textSecondary" component="p">
@@ -153,27 +179,6 @@ export default function Vacation({
               </Typography>
             </CardContent>
 
-            {user.login && user.role == "admin" && (
-              <CardActions>
-                <Button
-                  size="small"
-                  onClick={handleDelete}
-                  color="default"
-                  startIcon={<CloseIcon />}
-                  variant="text"
-                  className={classes.button}
-                />
-
-                <Button
-                  size="small"
-                  variant="text"
-                  color="default"
-                  startIcon={<CreateIcon />}
-                  href={"/edit/" + vacation.id}
-                  className={classes.button}
-                />
-              </CardActions>
-            )}
             <CardActions>
               {like === true ? (
                 <Button size="small" onClick={handleUnLike}>

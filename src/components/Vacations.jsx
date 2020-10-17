@@ -17,10 +17,16 @@ const useStyles = makeStyles((theme) => ({
     margin: theme.spacing(2),
   },
   root: {
-    flexGrow: 1,
+    flexGrow: 4,
   },
   menuButton: {
     marginRight: theme.spacing(2),
+  },
+  btn: {
+    background: "linear-gradient(45deg, #FE6B8B 30%, #FF8E53 90%)",
+    boxShadow: "0 3px 5px 2px rgba(255, 105, 135, .3)",
+    color: "white",
+    borderRadius: 4,
   },
 }));
 
@@ -57,10 +63,10 @@ export default function Vacations({ history, match }) {
             }
           );
           let data1 = await res1.json();
+         
           setLikedVacations(data1);
-
           setUnlikedVacations(data.filter(compare(data1)));
-          console.log(data);
+          
         }
       })();
     }
@@ -187,22 +193,31 @@ export default function Vacations({ history, match }) {
       </div>
       {search.length === 0 ? (
         user.role === "admin" ? (
-          <>
-            <br></br>
-
-            <Button variant="contained" color="secondary">
-              <Link to="/add" component={RouterLink}>
-                Add Vacation
-              </Link>
-            </Button>
-
+          <div>
+            <span className="btn">
+              <Button
+                variant="contained"
+                className={classes.btn}
+                color="secondary"
+              >
+                <Link to="/add" vacations={vacations} component={RouterLink}>
+                  Add Vacation
+                </Link>
+              </Button>
+              &nbsp;&nbsp;&nbsp;
+              <Button className={classes.btn} variant="contained">
+                <Link to="/charts" vacations={vacations} component={RouterLink}>
+                  Charts
+                </Link>
+              </Button>
+            </span>
             <h5>Vacations list</h5>
             <Grid container>
               <Grid item xs={2}></Grid>
               <Grid item xs={8}>
-                <Grid container spacing={2}>
+                <Grid container spacing={4}>
                   {vacations.map((v) => (
-                    <Grid item xs={6}>
+                    <Grid key={v.id} item xs={6}>
                       <Vacation
                         update={setVactions}
                         key={v.id}
@@ -215,7 +230,7 @@ export default function Vacations({ history, match }) {
               </Grid>
               <Grid item xs={2}></Grid>
             </Grid>
-          </>
+          </div>
         ) : (
           <>
             <br></br>
@@ -225,13 +240,14 @@ export default function Vacations({ history, match }) {
               <Grid item xs={2}></Grid>
               <Grid item xs={8}>
                 <Grid container spacing={2}>
-                  {likedVacations.map((f) => (
-                    <Grid item xs={6}>
+                  {likedVacations.map((v) => (
+                    <Grid key={v.id} item xs={6}>
                       <Vacation
+                        update={vacations}
                         updateLikes={setLikedVacations}
                         updateUnLikes={setUnlikedVacations}
-                        key={f.id}
-                        vacation={f}
+                        key={v.id}
+                        vacation={v}
                         like={true}
                         likedVacations={likedVacations}
                         unLikedVacations={unLikedVacations}
@@ -249,8 +265,9 @@ export default function Vacations({ history, match }) {
               <Grid item xs={8}>
                 <Grid container spacing={2}>
                   {unLikedVacations.map((v) => (
-                    <Grid item xs={6}>
+                    <Grid key={v.id} item xs={6}>
                       <Vacation
+                        update={vacations}
                         updateLikes={setLikedVacations}
                         updateUnLikes={setUnlikedVacations}
                         key={v.id}

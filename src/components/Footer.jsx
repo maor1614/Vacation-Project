@@ -6,21 +6,17 @@ import Paper from "@material-ui/core/Paper";
 
 const styles = (theme) => ({
   root: {
-    ...theme.mixins.gutters(),
+    ...theme.mixins.gutters(1),
     paddingTop: theme.spacing(1),
     paddingBottom: theme.spacing(2),
   },
-  footer: {
-    backgroundColor: "theme.palette.background.paper",
-    
-    bottom: 0,
-  },
+  
 });
 
 function Footer(props) {
   const { classes } = props;
   return (
-    <footer className={classes.footer}>
+    <footer  className="footer">
       <Paper elevation={1}>
         <Typography variant="h5" component="h3">
           Created By Maor Shiri
